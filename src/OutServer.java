@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.ClientInfoStatus;
 
 // To recompile files and run server:
 // javac src/*.java && java -cp src OutServer
@@ -48,16 +49,25 @@ public class OutServer {
     public static void writeToSocket(int port) throws IOException {
 
         try (ServerSocket server = new ServerSocket(port)) {
-
-        System.out.println("Waiting for client to connect ....");
+            while (true) {
+            System.out.println("Waiting for client to connect ....");
         Socket socket = server.accept();
-        handleClient(socket);   
+
+        Thread clientThread = new Thread(() -> handleClient(socket));
+        clientThread.start();
+
+        // clientThread.run();
+        // handleClient(socket);   
+            }
+
+       
    
         }
         }
     
-    public static void handleClient(Socket socket) throws IOException{
-             System.out.println("Client connnected!");
+    public static void handleClient(Socket socket){
+        try {
+        System.out.println("Client connnected!");
 
         OutputStream outputStream = socket.getOutputStream();
         OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream, java.nio.charset.StandardCharsets.UTF_8);
@@ -69,7 +79,24 @@ public class OutServer {
             bufferedWriter.newLine();
             bufferedWriter.flush();
 
-    }
-}
+            try {
+            Thread.sleep(500);
 
+            }catch(InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Client interrupted");
+                return;
+            }
+             
+        }
+
+    
+        } catch (IOException e) {
+        System.out.println("Client disconnected");
+        return;
+
+
+    }
+
+}
 }
